@@ -276,14 +276,13 @@
         const videos = Array.from(videoFrames, (iframe) => {
           const number = Number(iframe.dataset.videoNumber);
           const item = result.items[number];
-          if (!item || typeof item.link !== "string" || typeof item.title !== "string") {
+          if (!item || typeof item.guid !== "string" || typeof item.title !== "string") {
             throw new Error(`Video ${number + 1} is missing from the feed.`);
           }
 
-          const url = new URL(item.link);
-          const videoId = url.searchParams.get("v");
-          if (url.hostname !== "www.youtube.com" || !videoId || !/^[\w-]{11}$/.test(videoId)) {
-            throw new Error(`Video ${number + 1} has an invalid YouTube URL.`);
+          const videoId = item.guid.match(/^yt:video:([\w-]{11})$/)?.[1];
+          if (!videoId) {
+            throw new Error(`Video ${number + 1} has an invalid YouTube video ID.`);
           }
 
           return { iframe, videoId, title: item.title };
