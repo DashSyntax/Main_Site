@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101410">
+  <meta name="description" content="Browse CTF challenges by category, with descriptions and challenge files.">
   <title>Challenges | Dashiel Soleon</title>
   <style>
     :root {
@@ -11,35 +12,488 @@
       font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
       background: #101410;
       color: #d7e2d2;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
       --green: #9de67b;
       --muted: #91a18d;
       --line: #2a372b;
+      --panel: #151c16;
     }
 
     * { box-sizing: border-box; }
 
-    body { min-height: 100vh; margin: 0; padding: 48px 20px; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 48px 20px;
+      background-image: radial-gradient(ellipse at top, #1a251b 0, #101410 62%);
+    }
+
     main {
-      width: min(100%, 760px);
+      width: min(100%, 980px);
       margin: 0 auto;
-      padding: clamp(24px, 6vw, 52px);
+      overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 10px;
+      background: rgb(16 20 16 / 94%);
+      box-shadow: 0 24px 80px rgb(0 0 0 / 35%);
+    }
+
+    .window-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: #1a211b;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #60725e; }
+    .window-title { margin-left: 7px; }
+    .content { padding: clamp(22px, 5vw, 48px); }
+
+    .prompt {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .prompt span, h1, .caret { color: var(--green); }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 7vw, 50px);
+      letter-spacing: -0.07em;
+      line-height: 1.15;
+    }
+
+    .intro {
+      max-width: 680px;
+      margin: 18px 0 32px;
+      color: #b6c3b2;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button, input { font: inherit; }
+
+    .filter {
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .filter:hover, .filter:focus-visible, .filter[aria-pressed="true"] {
+      border-color: var(--green);
+      color: var(--green);
+      outline: none;
+    }
+
+    .search {
+      width: min(100%, 230px);
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #0e130f;
+      color: #d7e2d2;
+      font-size: 12px;
+    }
+
+    .search:focus { border-color: var(--green); outline: none; }
+    .search::placeholder { color: #71806e; }
+
+    .board {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 7px;
       background: #121812;
     }
-    p { color: var(--muted); line-height: 1.8; }
-    .prompt { font-size: 13px; }
-    .prompt span, h1 { color: var(--green); }
-    h1 { font-size: clamp(28px, 6vw, 42px); }
+
+    .board-heading, .challenge {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 170px;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 18px;
+    }
+
+    .board-heading {
+      border-bottom: 1px solid var(--line);
+      background: #1a211b;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .challenge {
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .challenge:last-child { border-bottom: 0; }
+    .challenge[hidden] { display: none; }
+
+    .challenge-main { min-width: 0; }
+
+    .challenge-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      color: #e0eadb;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .category {
+      padding: 3px 7px;
+      border: 1px solid #354637;
+      border-radius: 4px;
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 400;
+    }
+
+    .description {
+      margin: 9px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .files {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .file {
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--green);
+      font-size: 10px;
+      text-decoration: none;
+    }
+
+    .file:hover, .file:focus-visible, .walkthrough:hover, .walkthrough:focus-visible {
+      border-color: var(--green);
+      outline: none;
+    }
+
+    .walkthrough {
+      color: var(--green);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .board-status {
+      padding: 36px 20px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .board-status[hidden] { display: none; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
     a { color: var(--green); text-underline-offset: 3px; }
+
+    @media (max-width: 680px) {
+      body { padding: 20px 12px; }
+      .toolbar { align-items: stretch; flex-direction: column-reverse; }
+      .search { width: 100%; }
+      .board-heading { display: none; }
+      .challenge {
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding: 16px;
+      }
+      .challenge-main { grid-column: 1 / -1; }
+      .difficulty { grid-column: 1; }
+      .points { grid-column: 2; grid-row: 2; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .filter { transition: border-color 150ms ease, color 150ms ease; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <p class="prompt"><span>dashiel@site</span>:~/challenges$ ls</p>
-    <h1>Challenges</h1>
-    <p>WIP</p>
-    <p><a href="../">← Back to Main</a></p>
+    <div class="window-bar" aria-hidden="true">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="window-title">dashiel@site: ~/challenges</span>
+    </div>
+    <div class="content">
+      <p class="prompt"><span>dashiel@site</span>:~/challenges$ ls -la</p>
+      <h1>CTF Challenges<span class="caret">_</span></h1>
+      <p class="intro">Challenges developed for past CTFs. Walkthroughs listed where available.</p>
+
+      <section aria-label="Challenge listings">
+        <div class="toolbar">
+          <div class="filters" role="group" aria-label="Filter challenges by category">
+            <button class="filter" type="button" data-category="all" aria-pressed="true">All</button>
+            <button class="filter" type="button" data-category="forensics" aria-pressed="false">Forensics</button>
+            <button class="filter" type="button" data-category="rev" aria-pressed="false">Rev</button>
+            <button class="filter" type="button" data-category="pwn" aria-pressed="false">Pwn</button>
+            <button class="filter" type="button" data-category="osint" aria-pressed="false">OSINT</button>
+            <button class="filter" type="button" data-category="crypto" aria-pressed="false">Crypto</button>
+            <button class="filter" type="button" data-category="misc" aria-pressed="false">Misc</button>
+          </div>
+          <label>
+            <span class="sr-only">Search challenges</span>
+            <input class="search" type="search" placeholder="Search challenges..." autocomplete="off">
+          </label>
+        </div>
+
+        <div class="board">
+          <div class="board-heading" aria-hidden="true">
+            <span>Challenge</span><span style="text-align: right">Walkthrough</span>
+          </div>
+          <p class="board-status" id="board-status" role="status">Loading challenges...</p>
+          <div id="challenge-list"></div>
+        </div>
+      </section>
+
+      <footer>
+        <a href="../">← Back to Main</a>
+        <span><span id="visible-count">0</span> challenges listed</span>
+      </footer>
+    </div>
   </main>
+  <script>
+    const filters = document.querySelectorAll(".filter");
+    const challengeList = document.querySelector("#challenge-list");
+    const search = document.querySelector(".search");
+    const boardStatus = document.querySelector("#board-status");
+    const visibleCount = document.querySelector("#visible-count");
+    const categories = ["forensics", "rev", "pwn", "osint", "crypto", "misc"];
+    const categoryLabels = {
+      forensics: "Forensics",
+      rev: "Rev",
+      pwn: "Pwn",
+      osint: "OSINT",
+      crypto: "Crypto",
+      misc: "Misc"
+    };
+    let challenges = [];
+    let activeCategory = "all";
+
+    function normalizeChallenge(challenge, index) {
+      if (!challenge || typeof challenge !== "object" || Array.isArray(challenge)) {
+        throw new Error(`Challenge ${index + 1} must be an object.`);
+      }
+
+      const { name, category, description, youtube, files } = challenge;
+      if (typeof name !== "string" || !name.trim()) {
+        throw new Error(`Challenge ${index + 1} is missing a name.`);
+      }
+      if (typeof category !== "string" || !categories.includes(category.toLowerCase())) {
+        throw new Error(`Challenge "${name}" has an unsupported category.`);
+      }
+      if (typeof description !== "string") {
+        throw new Error(`Challenge "${name}" is missing a description.`);
+      }
+      if (typeof youtube !== "string") {
+        throw new Error(`Challenge "${name}" must have a YouTube URL (use an empty string if unavailable).`);
+      }
+      if (!Array.isArray(files) || files.some((file) => typeof file !== "string" || !file.trim())) {
+        throw new Error(`Challenge "${name}" must have a files array of relative paths.`);
+      }
+
+      const safeFiles = files.map((file) => {
+        const segments = file.split("/");
+        if (file.startsWith("/") || file.includes("\\") || segments.some((segment) => !segment || segment === "." || segment === "..")) {
+          throw new Error(`Challenge "${name}" has an invalid file path: ${file}`);
+        }
+        return file;
+      });
+
+      let walkthrough = "";
+      if (youtube.trim()) {
+        let url;
+        try {
+          url = new URL(youtube);
+        } catch {
+          throw new Error(`Challenge "${name}" has an invalid YouTube URL.`);
+        }
+        const host = url.hostname.toLowerCase();
+        if (url.protocol !== "https:" || !(host === "youtu.be" || host === "youtube.com" || host.endsWith(".youtube.com"))) {
+          throw new Error(`Challenge "${name}" must use an https YouTube URL.`);
+        }
+        walkthrough = url.href;
+      }
+
+      return {
+        name: name.trim(),
+        category: category.toLowerCase(),
+        description,
+        walkthrough,
+        files: safeFiles
+      };
+    }
+
+    function createChallengeCard(challenge) {
+      const article = document.createElement("article");
+      article.className = "challenge";
+      article.dataset.category = challenge.category;
+      article.dataset.search = [challenge.name, challenge.category, challenge.description, ...challenge.files].join(" ").toLowerCase();
+
+      const main = document.createElement("div");
+      main.className = "challenge-main";
+      const title = document.createElement("h2");
+      title.className = "challenge-title";
+      title.append(document.createTextNode(challenge.name));
+      const category = document.createElement("span");
+      category.className = "category";
+      category.textContent = categoryLabels[challenge.category];
+      title.append(category);
+      const description = document.createElement("p");
+      description.className = "description";
+      const italicTag = /<i>([\s\S]*?)<\/i>/gi;
+      let textStart = 0;
+      let match;
+      while ((match = italicTag.exec(challenge.description)) !== null) {
+        description.append(document.createTextNode(challenge.description.slice(textStart, match.index)));
+        const italic = document.createElement("em");
+        italic.textContent = match[1];
+        description.append(italic);
+        textStart = italicTag.lastIndex;
+      }
+      description.append(document.createTextNode(challenge.description.slice(textStart)));
+      main.append(title, description);
+
+      const files = document.createElement("div");
+      files.className = "files";
+      files.setAttribute("aria-label", "Challenge files");
+      if (challenge.files.length) {
+        challenge.files.forEach((file) => {
+          const link = document.createElement("a");
+          link.className = "file";
+          link.href = `data/${file.split("/").map(encodeURIComponent).join("/")}`;
+          link.textContent = file.split("/").pop();
+          link.title = file;
+          link.setAttribute("download", "");
+          files.append(link);
+        });
+      } else {
+        const noFiles = document.createElement("span");
+        noFiles.className = "file";
+        noFiles.textContent = "No files attached";
+        files.append(noFiles);
+      }
+      main.append(files);
+
+      let walkthrough;
+      if (challenge.walkthrough) {
+        walkthrough = document.createElement("a");
+        walkthrough.className = "walkthrough";
+        walkthrough.href = challenge.walkthrough;
+        walkthrough.target = "_blank";
+        walkthrough.rel = "noopener noreferrer";
+        walkthrough.textContent = "Watch video ↗";
+      } else {
+        walkthrough = document.createElement("span");
+        walkthrough.className = "walkthrough";
+        walkthrough.textContent = "Not available";
+      }
+
+      article.append(main, walkthrough);
+      return article;
+    }
+
+    function updateChallenges() {
+      const query = search.value.trim().toLowerCase();
+      let count = 0;
+
+      challengeList.querySelectorAll(".challenge").forEach((challenge) => {
+        const matchesCategory = activeCategory === "all" || challenge.dataset.category === activeCategory;
+        const matchesSearch = challenge.dataset.search.includes(query);
+        const isVisible = matchesCategory && matchesSearch;
+        challenge.hidden = !isVisible;
+        if (isVisible) count += 1;
+      });
+
+      visibleCount.textContent = count;
+      if (!challenges.length) {
+        boardStatus.textContent = "No challenges yet.";
+        boardStatus.hidden = false;
+      } else if (count === 0) {
+        boardStatus.textContent = "No challenges match your search.";
+        boardStatus.hidden = false;
+      } else {
+        boardStatus.hidden = true;
+      }
+    }
+
+    async function loadChallenges() {
+      try {
+        const response = await fetch("./challs.json", { cache: "no-cache" });
+        if (!response.ok) {
+          throw new Error(`Could not load challs.json (${response.status}).`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("challs.json must contain an array of challenges.");
+        }
+
+        challenges = data.map(normalizeChallenge);
+        challengeList.replaceChildren(...challenges.map(createChallengeCard));
+        updateChallenges();
+      } catch (error) {
+        console.error("Failed to load challenges:", error);
+        boardStatus.textContent = "Could not load challenges. Check challs.json and serve this page over HTTP or HTTPS.";
+        boardStatus.hidden = false;
+      }
+    }
+
+    filters.forEach((filter) => {
+      filter.addEventListener("click", () => {
+        activeCategory = filter.dataset.category;
+        filters.forEach((item) => item.setAttribute("aria-pressed", String(item === filter)));
+        updateChallenges();
+      });
+    });
+
+    search.addEventListener("input", updateChallenges);
+    loadChallenges();
+  </script>
 </body>
 </html>
