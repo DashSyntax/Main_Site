@@ -4,6 +4,7 @@
     "category": "OSINT",
     "description": "The Manchester Ghost Hunters have been stuck on this case for years, too afraid to continue. Can you crack the crypt?\n <i>(From Hackchester October CTF 'Hack-O-Lantern')</i>",
     "youtube": "https://www.youtube.com/watch?v=xU_2DmvVoxM",
+    "flag": "SHhNe3czbGMwbWVfdDBfdGgzX2NycHk3fQ==",
     "files": [
       "crypt/crypt.rar",
       "crypt/Report 13.docx",
