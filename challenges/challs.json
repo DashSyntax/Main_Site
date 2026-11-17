@@ -10,5 +10,15 @@
       "crypt/Report 13.docx",
       "crypt/Report-12-img.jpg"
     ]
+  },
+  {
+    "name": "The Graeae",
+    "category": "Crypto",
+    "description": "The Graeae speak as one... but what do they say?\n <i>(From Hackchester October CTF 'Hack-O-Lantern')</i>",
+    "youtube": "",
+    "flag": "SHhNe2doMHN0c19uM3Yzcl91czNfYV9rM3lfdHcxYzN9",
+    "files": [
+      "graeae/Graeae.txt"
+    ]
   }
 ]
