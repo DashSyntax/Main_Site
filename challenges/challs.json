@@ -20,5 +20,15 @@
     "files": [
       "graeae/Graeae.txt"
     ]
+  },
+  {
+    "name": "Spooky Authentication",
+    "category": "Rev",
+    "description": "This spooky file has been left here by a ghost... see if you can authenticate and get the flag!\n <i>(From Hackchester October CTF 'Hack-O-Lantern')</i>",
+    "youtube": "https://www.youtube.com/watch?v=Z1tssxH-og4&t=3s",
+    "flag": "SHhNe1Awb3JfQzBtcDFsYTR0aW9uX2k1X3NjNHJ5fQ==",
+    "files": [
+      "spookyauth/SpookyAuth.exe"
+    ]
   }
 ]
